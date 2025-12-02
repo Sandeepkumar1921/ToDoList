@@ -4,7 +4,9 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Task Manager</title>
+
 <style>
+/* आपका पूरा original CSS (कोई बदलाव नहीं किया) */
 :root {
   --bg-light: #eef1f5;
   --container-light: #fff;
@@ -51,9 +53,9 @@ button { padding:8px 12px; border:none; border-radius:8px; cursor:pointer; backg
 ul { list-style:none; padding:0; margin:0; }
 li { margin-bottom:12px; padding:12px; border-radius:10px; display:flex; justify-content:space-between; align-items:center; color:#fff; flex-wrap:wrap; }
 
-.pending { background: #ffcc00; }        /* Yellow */
-.completed { background: #7fffd4; }     /* Aquamarine */
-.not-completed { background:#ff4d4d; }  /* Red overdue */
+.pending { background: #ffcc00; }
+.completed { background: #7fffd4; }
+.not-completed { background:#ff4d4d; }
 
 .buttons button { margin-left:6px; padding:5px 8px; border-radius:6px; border:none; color:white; cursor:pointer; }
 
@@ -122,79 +124,15 @@ li { margin-bottom:12px; padding:12px; border-radius:10px; display:flex; justify
 </div>
 </div>
 
+<!-- Attach JS files -->
+<script src="main.js"></script>
+<script src="notification.js"></script>
+
 <script>
-let tasks = JSON.parse(localStorage.getItem("tasks")) || [];
-
-function saveTasks(){ localStorage.setItem("tasks",JSON.stringify(tasks)); }
-
-function addTask(){
-  const name = document.getElementById("taskInput").value.trim();
-  const date = document.getElementById("taskDate").value;
-  const time = document.getElementById("taskTime").value || "00:01";
-  const priority = document.getElementById("taskPriority").value;
-  if(!name || !date) return alert("Task name and date required!");
-  
-  tasks.push({text:name,date:date,time:time,priority:priority,completed:false});
-  saveTasks();
-  
-  // Clear inputs
-  document.getElementById("taskInput").value="";
-  document.getElementById("taskDate").value="";
-  document.getElementById("taskTime").value="";
-  displayTasks();
+if ("serviceWorker" in navigator) {
+    navigator.serviceWorker.register("service-worker.js");
 }
-
-function deleteTask(i){ if(confirm("Delete this task?")){ tasks.splice(i,1); saveTasks(); displayTasks(); } }
-
-function editTask(i){
-  const t = prompt("Edit task name:",tasks[i].text);
-  if(t){ tasks[i].text=t; saveTasks(); displayTasks(); }
-}
-
-function toggleComplete(i){ tasks[i].completed=!tasks[i].completed; saveTasks(); displayTasks(); }
-
-function displayTasks(){
-  const todayObj = new Date();
-  const todayStr = todayObj.toISOString().split('T')[0]; // YYYY-MM-DD
-  
-  const todayTasks=document.getElementById("todayTasks");
-  const notCompleted=document.getElementById("notCompletedTasks");
-  const completed=document.getElementById("completedTasks");
-  todayTasks.innerHTML=""; notCompleted.innerHTML=""; completed.innerHTML="";
-
-  tasks.forEach((task,i)=>{
-    const li = document.createElement("li");
-    li.textContent = task.text;
-
-    // Flag color
-    const spanFlag=document.createElement("span");
-    spanFlag.style.marginRight="8px";
-    if(task.priority==="low") spanFlag.className="flag-low";
-    else if(task.priority==="medium") spanFlag.className="flag-medium";
-    else spanFlag.className="flag-high";
-    spanFlag.textContent="⚑";
-    li.prepend(spanFlag);
-
-    // Buttons
-    const btnDiv=document.createElement("div"); btnDiv.className="buttons";
-    const completeBtn=document.createElement("button"); completeBtn.textContent="✔"; completeBtn.className="complete-btn"; completeBtn.onclick=()=>toggleComplete(i);
-    const editBtn=document.createElement("button"); editBtn.textContent="✎"; editBtn.className="edit-btn"; editBtn.onclick=()=>editTask(i);
-    const delBtn=document.createElement("button"); delBtn.textContent="🗑"; delBtn.className="delete-btn"; delBtn.onclick=()=>deleteTask(i);
-    btnDiv.appendChild(completeBtn); btnDiv.appendChild(editBtn); btnDiv.appendChild(delBtn);
-    li.appendChild(btnDiv);
-
-    // Set color & section based on date & status
-    if(task.completed && task.date === todayStr){
-      li.className="completed"; completed.appendChild(li);
-    } else if(task.date === todayStr){
-      li.className="pending"; todayTasks.appendChild(li);
-    } else if(task.date < todayStr && !task.completed){
-      li.className="not-completed"; notCompleted.appendChild(li);
-    }
-  });
-}
-
-displayTasks();
 </script>
+
 </body>
 </html>
